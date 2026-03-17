@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vocab Engine - HITE Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #f8fafc; 
+            touch-action: manipulation; 
+            user-select: none; 
+            margin: 0;
+        }
+
+        /* 公路容器 */
+        .road-container { 
+            height: 120px; 
+            background: #1e293b; 
+            position: relative; 
+            overflow: hidden; 
+            border-bottom: 8px solid #334155; 
+        }
+
+        /* 路面虚线动画 */
+        .road-line { 
+            position: absolute; 
+            top: 50%; 
+            width: 200%; 
+            height: 4px; 
+            border-top: 4px dashed rgba(255,255,255,0.2); 
+            animation: moveRoad 1s linear infinite; 
+        }
+
+        @keyframes moveRoad { 
+            from { transform: translateX(0); } 
+            to { transform: translateX(-50%); } 
+        }
+
+        /* 赛车：确保面向右侧（终点） */
+        .car { 
+            position: absolute; 
+            bottom: 15px; 
+            left: 20px; 
+            font-size: 3rem;
+            transition: left 0.8s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            z-index: 30;
+            transform: scaleX(-1); /* 水平翻转，让原本面向左的赛车面向右 */
+        }
+
+        /* 终点校门 */
+        .school-gate {
+            position: absolute;
+            right: 0;
+            bottom: 8px;
+            width: 100px;
+            height: 100px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            z-index: 20;
+        }
+
+        .gate-arch {
+            width: 70px;
+            height: 60px;
+            border: 6px solid #e2e8f0;
+            border-bottom: none;
+            border-radius: 12px 12px 0 0;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+        }
+
+        .gate-sign {
+            position: absolute;
+            top: -25px;
+            left: -15px;
+            width: 100px;
+            background: #ef4444;
+            color: white;
+            font-size: 8px;
+            font-weight: 900;
+            padding: 2px 4px;
+            text-align: center;
+            border-radius: 4px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            white-space: nowrap;
+        }
+
+        /* 游戏网格 */
+        .mole-grid { 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); 
+            gap: 12px; 
+            padding: 15px; 
+        }
+
+        .hole { 
+            position: relative; 
+            aspect-ratio: 1/1; 
+            background: #334155; 
+            border-radius: 50%; 
+            box-shadow: inset 0 6px 0 rgba(0,0,0,0.4); 
+            overflow: hidden; 
+        }
+
+        .mole { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(135deg, #3b82f6, #1e40af); 
+            color: white; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: 800; 
+            font-size: 0.85rem; 
+            padding: 8px; 
+            text-align: center; 
+            border-radius: 50%; 
+            transition: top 0.2s cubic-bezier(0.18, 0.89, 0.32, 1.28); 
+            cursor: pointer; 
+            border: 2px solid #60a5fa; 
+        }
+
+        .mole.up { top: 0; }
+        .mole.correct { background: #10b981 !important; border-color: #34d399 !important; }
+        .mole.wrong { background: #ef4444 !important; border-color: #f87171 !important; }
+
+        /* 震动效果 */
+        .shake { animation: shake 0.3s ease-in-out; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    
+    <div class="max-w-md mx-auto bg-white shadow-xl sticky top-0 z-50">
+        <div class="p-3 flex justify-between items-center bg-blue-900 text-white">
+            <h1 class="font-black italic tracking-tighter uppercase text-sm">HITE Vocab Engine</h1>
+            <div id="score-display" class="bg-blue-600 px-4 py-1 rounded-full font-bold text-xs border border-blue-400">积分: 0</div>
+        </div>
+        
+        <!-- 赛车轨道 -->
+        <div class="road-container">
+            <div class="road-line"></div>
+            
+            <!-- 终点：校门 -->
+            <div class="school-gate">
+                <div class="gate-arch">
+                    <div class="gate-sign">湖南交通工程学院</div>
+                </div>
+            </div>
+
+            <!-- 赛车 -->
+            <div id="car" class="car">🏎️</div>
+        </div>
+    </div>
+
+    <main class="max-w-md mx-auto p-4">
+        <div class="bg-white p-6 rounded-2xl shadow-md border-b-4 border-blue-200 mb-6 text-center">
+            <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 tracking-widest">Target Word</p>
+            <div id="target-word" class="text-4xl font-black text-blue-700 tracking-tight">---</div>
+        </div>
+
+        <div class="mole-grid" id="mole-container"></div>
+
+        <p class="text-center text-[10px] text-slate-400 mt-4 font-bold italic">
+            请点击正确的含义，让赛车驶向校门口！
+        </p>
+    </main>
+
+    <script>
+        const vocabData = [
+            { w: 'tedious', m: '乏味的' }, { w: 'oddity', m: '怪人' },
+            { w: 'allergic', m: '反感' }, { w: 'deficit', m: '缺失' },
+            { w: 'asset', m: '资产' }, { w: 'exceed', m: '超过' },
+            { w: 'vital', m: '重要的' }, { w: 'precise', m: '精确的' },
+            { w: 'absorb', m: '全神贯注' }, { w: 'distress', m: '苦恼' }
+        ];
+
+        let score = 0;
+        let currentVocab = null;
+        let isLock = false;
+
+        function init() {
+            const container = document.getElementById('mole-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const h = document.createElement('div');
+                h.className = 'hole';
+                h.innerHTML = `<div class="mole" id="mole-${i}" onclick="hit(${i})"></div>`;
+                container.appendChild(h);
+            }
+            next();
+        }
+
+        function next() {
+            isLock = false;
+            const moles = document.querySelectorAll('.mole');
+            moles.forEach(m => m.classList.remove('up', 'correct', 'wrong'));
+
+            currentVocab = vocabData[Math.floor(Math.random() * vocabData.length)];
+            document.getElementById('target-word').innerText = currentVocab.w;
+
+            const correctIdx = Math.floor(Math.random() * 6);
+            const others = vocabData.filter(v => v.w !== currentVocab.w).sort(() => Math.random() - 0.5);
+
+            moles.forEach((m, i) => {
+                if (i === correctIdx) {
+                    m.innerText = currentVocab.m;
+                    m.dataset.correct = "true";
+                } else {
+                    m.innerText = others[i] ? others[i].m : '干扰';
+                    m.dataset.correct = "false";
+                }
+                setTimeout(() => m.classList.add('up'), 100 + (i * 30));
+            });
+        }
+
+        function hit(i) {
+            if (isLock) return;
+            const m = document.getElementById(`mole-${i}`);
+            
+            if (m.dataset.correct === "true") {
+                isLock = true;
+                m.classList.add('correct');
+                score += 10;
+                document.getElementById('score-display').innerText = `积分: ${score}`;
+                moveCar();
+                setTimeout(next, 600);
+            } else {
+                m.classList.add('wrong');
+                document.body.classList.add('shake');
+                setTimeout(() => document.body.classList.remove('shake'), 400);
+            }
+        }
+
+        function moveCar() {
+            const car = document.getElementById('car');
+            const maxScore = 150; // 150分到达校门口
+            const progress = Math.min(score / maxScore, 1);
+            // 计算移动距离，减去校门和赛车自身的宽度
+            const moveRange = document.querySelector('.road-container').offsetWidth - 140;
+            car.style.left = (20 + (progress * moveRange)) + 'px';
+            
+            if (score >= maxScore) {
+                document.querySelector('.road-line').style.animationPlayState = 'paused';
+                setTimeout(() => alert("🎉 恭喜！你已成功抵达湖南交通工程学院！"), 500);
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

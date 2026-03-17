@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Hub - 教学互动大厅</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;900&display=swap');
+        body { font-family: 'Lexend', sans-serif; background: #f8fafc; }
+        .hub-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-radius: 2rem; border-width: 2px; }
+        .hub-card:hover { transform: translateY(-8px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); border-color: #3b82f6; }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-md mx-auto">
+        <!-- 顶部标题 -->
+        <header class="text-center mb-10 pt-12">
+            <div class="inline-block bg-blue-600 text-white px-4 py-1 rounded-full text-[10px] font-black mb-3 tracking-widest uppercase shadow-lg">HITE ENGLISH STUDIO</div>
+            <h1 class="text-4xl font-black text-slate-800 tracking-tighter italic">ENGLISH HUB</h1>
+            <p class="text-slate-400 text-xs mt-2 font-bold uppercase tracking-widest text-center">湖南交通工程学院 · 数字化互动课堂</p>
+        </header>
+
+        <div class="space-y-6">
+            <!-- 单元标题 -->
+            <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-4 mb-2">Unit 1: Language in Mission</div>
+            
+            <!-- 链接到 ./unit1-vocab/index.html -->
+            <a href="./unit1-vocab/index.html" class="hub-card bg-white p-6 flex items-center gap-6 border-slate-100 block shadow-sm">
+                <div class="text-4xl">🏎️</div>
+                <div>
+                    <h3 class="font-black text-lg text-slate-800">词汇引擎挑战</h3>
+                    <p class="text-slate-400 text-[10px] font-bold uppercase">公路旅行模式 · 核心词汇速记</p>
+                </div>
+            </a>
+
+            <!-- 链接到 ./unit1-cloze/index.html -->
+            <a href="./unit1-cloze/index.html" class="hub-card bg-white p-6 flex items-center gap-6 border-slate-100 block shadow-sm border-blue-50">
+                <div class="text-4xl">💰</div>
+                <div>
+                    <h3 class="font-black text-lg text-slate-800 text-blue-600">选词填空诊断室</h3>
+                    <p class="text-slate-400 text-[10px] font-bold uppercase">语法逻辑模式 · 积累语言资产</p>
+                </div>
+            </a>
+
+            <!-- 链接到 ./unit1-writing/index.html -->
+            <a href="./unit1-writing/index.html" class="hub-card bg-white p-6 flex items-center gap-6 border-slate-100 block shadow-sm">
+                <div class="text-4xl">🏆</div>
+                <div>
+                    <h3 class="font-black text-lg text-slate-800">句型仿写实验室</h3>
+                    <p class="text-slate-400 text-[10px] font-bold uppercase">广场模式 · 拒绝文字失语</p>
+                </div>
+            </a>
+        </div>
+
+        <!-- 页脚 -->
+        <footer class="mt-20 text-center pb-10">
+            <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest">Powered by Teacher Mindy & AI</p>
+            <div class="mt-4 flex justify-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-blue-400"></div>
+                <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+                <div class="w-1 h-1 rounded-full bg-slate-300"></div>
+            </div>
+        </footer>
+    </div>
+</body>
+</html>

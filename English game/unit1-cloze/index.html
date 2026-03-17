@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CET-4 选词诊断室 - Unit 1</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; overflow: hidden; }
+        .underline-gap { border-bottom: 2px solid #cbd5e1; min-width: 140px; display: inline-flex; align-items: center; justify-content: center; margin: 0 4px; height: 36px; cursor: pointer; transition: all 0.2s; position: relative; }
+        .underline-gap:hover { border-color: #3b82f6; background: #eff6ff; }
+        .correct-state { border-color: #10b981; color: #059669; font-weight: 800; background: #ecfdf5; }
+        .wrong-state { border-color: #ef4444; color: #dc2626; background: #fef2f2; font-weight: 800; }
+        .filled-state { border-color: #3b82f6; color: #2563eb; font-weight: 800; }
+        @keyframes coin-drop { 0% { transform: translateY(-100px); opacity: 0; } 60% { transform: translateY(20px); } 100% { transform: translateY(0); opacity: 1; } }
+        .animate-coin { animation: coin-drop 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useCallback } = React;
+        const Icon = ({ name, size = 16, className = "" }) => {
+            const paths = { Book: "M4 19.5A2.5 2.5 0 0 1 6.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z", Light: "M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .5 2.2 1.5 3.5.8.8 1.3 1.5 1.5 2.5M9 18h6M10 22h4", Refresh: "M1 4v6h6M3.51 15a9 9 0 1 0 2.13-9.36L1 10" };
+            return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d={paths[name] || ""} /></svg>;
+        };
+
+        function App() {
+            const [answers, setAnswers] = useState({});
+            const [showResult, setShowResult] = useState(false);
+            const [dragged, setDragged] = useState(null);
+            const [summary, setSummary] = useState(false);
+            const [activeRule, setActiveRule] = useState(null);
+
+            const wordBank = useMemo(() => [
+                { word: "allergic", pos: "Adj" }, { word: "splendor", pos: "Noun" },
+                { word: "architecture", pos: "Noun" }, { word: "exceeded", pos: "Verb" },
+                { word: "precisely", pos: "Adv" }, { word: "deficits", pos: "Noun" },
+                { word: "vital", pos: "Adj" }, { word: "asset", pos: "Noun" },
+                { word: "absorbed", pos: "Verb" }, { word: "proficiency", pos: "Noun" },
+                { word: "tedious", pos: "Adj" }, { word: "meticulous", pos: "Adj" },
+                { word: "distress", pos: "Noun" }, { word: "distinctive", pos: "Adj" },
+                { word: "encountered", pos: "Verb" }
+            ].sort((a, b) => a.word.localeCompare(b.word)), []);
+
+            const passage = useMemo(() => [
+                { t: "When Chinese students travel abroad, they often face 'Cultural Aphasia.' Because they lack the right words, many seem " },
+                { b: "b1", a: "allergic", r: "seem 之后应填形容词作表语。规律：Seem + [Adj.]。" },
+                { t: " to explaining the history of their own country. For instance, while the " },
+                { b: "b2", a: "splendor", r: "定冠词 the 之后、of 之前，必须填名词。规律：The + [Noun] + of。" },
+                { t: " of ancient " },
+                { b: "b3", a: "architecture", r: "形容词 ancient 之后应接名词。规律：[Adj.] + [Noun]。" },
+                { t: " is " },
+                { b: "b4", a: "exceeded", r: "is 与 by 之间填过去分词构成被动语态。规律：Is + [V-ed] + by。" },
+                { t: " only by the wisdom of our ancestors, students often find it hard to express these ideas " },
+                { b: "b5", a: "precisely", r: "修饰动词 express，填副词表示“精确地”。规律：Verb + [Adv.]。" },
+                { t: ". Such language " },
+                { b: "b6", a: "deficits", r: "指示代词 such 之后修饰名词复数。规律：Such + [Noun]s。" },
+                { t: " can make cross-cultural communication difficult. However, English should be seen as a " },
+                { b: "b7", a: "vital", r: "冠词 a 之后、名词 tool 之前，填形容词。规律：A + [Adj.] + Noun。" },
+                { t: " tool for sharing our heritage. Indeed, language is a precious " },
+                { b: "b8", a: "asset", r: "形容词 precious 之后应接名词作宾语。规律：[Adj.] + [Noun]。" },
+                { t: " that allows us to build bridges between nations. Only when we are truly " },
+                { b: "b9", a: "absorbed", r: "be 与 in 构成固定搭配，填过去分词。规律：Be + [V-ed] + in。" },
+                { t: " in our own culture can we improve our foreign language " },
+                { b: "b10", a: "proficiency", r: "名词 language 之后接名词构成复合名词。规律：[Noun] + [Noun]。" },
+                { t: " and confidently tell the story of China to the world." }
+            ], []);
+
+            const onDrop = (id) => {
+                if (!dragged) return;
+                const blank = passage.find(p => p.b === id);
+                setAnswers(prev => ({ ...prev, [id]: dragged }));
+                if (dragged === blank.a) { setActiveRule(blank.r); setTimeout(() => setActiveRule(null), 4000); }
+                setDragged(null);
+            };
+
+            const correctCount = passage.filter(p => p.b && answers[p.b] === p.a).length;
+
+            return (
+                <div className="flex h-screen overflow-hidden">
+                    <aside className="w-72 bg-white border-r border-slate-200 flex flex-col shadow-2xl z-20">
+                        <div className="p-8 bg-slate-900 text-white">
+                            <h2 className="text-sm font-black tracking-widest uppercase flex items-center gap-2"><Icon name="Book" className="text-blue-500" /> Word Bank</h2>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                            {wordBank.map(w => {
+                                const isUsed = Object.values(answers).includes(w.word);
+                                return <div key={w.word} draggable={!isUsed} onDragStart={() => setDragged(w.word)} className={`p-4 rounded-xl border-2 transition-all flex justify-between items-center ${isUsed ? 'opacity-10 grayscale scale-95' : 'bg-white border-slate-100 shadow-sm hover:border-blue-400 cursor-grab'}`}><span className="font-bold text-slate-700">{w.word}</span><span className="text-[9px] font-black text-blue-500 opacity-40 uppercase">{w.pos}</span></div>;
+                            })}
+                        </div>
+                    </aside>
+                    <main className="flex-1 flex flex-col bg-slate-50 relative overflow-hidden">
+                        <header className="h-16 bg-white border-b border-slate-200 px-8 flex justify-between items-center">
+                            <h1 className="font-black text-slate-800 italic uppercase">Unit 1 Diagnostic Lab</h1>
+                            <button onClick={() => { setShowResult(true); setSummary(true); }} className="bg-blue-600 text-white px-8 py-2 rounded-xl text-xs font-black shadow-lg">SUBMIT</button>
+                        </header>
+                        {activeRule && <div className="absolute top-20 right-10 z-50 w-72 bg-amber-50 border-2 border-amber-200 p-5 rounded-2xl shadow-2xl animate-in slide-in-from-right-10"><h4 className="text-[10px] font-black text-amber-800 uppercase flex items-center gap-2"><Icon name="Light" /> 语法规律总结</h4><p className="text-xs text-amber-900 font-bold">{activeRule}</p></div>}
+                        <div className="flex-1 overflow-y-auto p-12 lg:p-20"><div className="max-w-4xl mx-auto bg-white p-16 md:p-24 rounded-[4rem] shadow-xl border border-slate-100"><div className="text-xl leading-[4rem] text-slate-700 font-medium">{passage.map((p, i) => p.t ? <span key={i}>{p.t}</span> : <span key={p.b} onDragOver={e => e.preventDefault()} onDrop={() => onDrop(p.b)} onClick={() => !showResult && setAnswers(prev => {const n={...prev}; delete n[p.b]; return n;})} className={`underline-gap ${showResult ? (answers[p.b] === p.a ? 'correct-state' : 'wrong-state') : (answers[p.b] ? 'filled-state' : '')}`}>{answers[p.b] || `(${Math.ceil(i/2)})`}</span>)}</div></div></div>
+                        {summary && <div className="absolute inset-0 z-[100] bg-slate-900/90 flex items-center justify-center p-6 animate-in fade-in"><div className="bg-white max-w-sm w-full rounded-[3.5rem] p-12 text-center shadow-2xl"><div className="text-9xl mb-8 animate-coin">{correctCount === 10 ? "💰" : correctCount >= 5 ? "👝" : "🧧"}</div><h2 className="text-3xl font-black text-slate-800 mb-2">{correctCount === 10 ? "满载而归！" : "初有积蓄"}</h2><p className="text-slate-500 text-sm mb-10">你填对了 {correctCount} 个空格。精准的表达就是你通往世界的财富。</p><button onClick={() => setShowSummary(false)} className="w-full bg-slate-100 py-4 rounded-3xl font-black text-xs mb-3">查看解析</button><button onClick={() => window.location.reload()} className="w-full bg-blue-600 text-white py-4 rounded-3xl font-black text-xs flex items-center justify-center gap-2"><Icon name="Refresh" size={14}/> 重新挑战</button></div></div>}
+                    </main>
+                </div>
+            );
+        }
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
